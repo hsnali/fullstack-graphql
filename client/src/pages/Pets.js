@@ -1,13 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, Fragment } from "react";
 import gql from "graphql-tag";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import PetsList from "../components/PetsList";
 import NewPetModal from "../components/NewPetModal";
 import Loader from "../components/Loader";
 
+const GET_PETS = gql`
+  query GetPets {
+    pets {
+      name
+    }
+  }
+`;
+
 export default function Pets() {
   const [modal, setModal] = useState(false);
-
+  const { data: { pets } = {}, loading } = useQuery(GET_PETS);
   const onSubmit = (input) => {
     setModal(false);
   };
@@ -30,10 +38,16 @@ export default function Pets() {
         </div>
       </section>
       <section>
-        <PetsList />
+        <PetsList pets={pets} />
       </section>
     </div>
   );
 
-  return modal ? Modal : List;
+  return (
+    <Fragment>
+      {loading && <Loader />}
+      {modal && Modal}
+      {!modal && List}
+    </Fragment>
+  );
 }

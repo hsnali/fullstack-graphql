@@ -46,8 +46,7 @@ export default function Pets() {
   return (
     <Fragment>
       {loading && <Loader />}
-      {modal && Modal}
-      {!modal && List}
+      {modal ? Modal : List}
     </Fragment>
   );
 }

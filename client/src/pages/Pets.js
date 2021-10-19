@@ -35,5 +35,5 @@ export default function Pets() {
     </div>
   );
 
-  return <div>{modal ? Modal : List}</div>;
+  return modal ? Modal : List;
 }

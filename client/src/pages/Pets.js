@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Fragment } from "react";
+import nanoid from "nanoid";
 import gql from "graphql-tag";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import PetsList from "../components/PetsList";
@@ -31,7 +32,7 @@ const ADD_PET = gql`
 export default function Pets() {
   const [modal, setModal] = useState(false);
   const { data: { pets } = {}, loading } = useQuery(ALL_PETS);
-  const [addPet, { loading: addPetLoading }] = useMutation(ADD_PET, {
+  const [addPet] = useMutation(ADD_PET, {
     update(cache, { data: { addPet } }) {
       const { pets } = cache.readQuery({ query: ALL_PETS });
       cache.writeQuery({
@@ -42,8 +43,21 @@ export default function Pets() {
   });
 
   const onSubmit = (input) => {
-    if (input) addPet({ variables: { input } });
     setModal(false);
+    if (input) {
+      addPet({
+        variables: { input },
+        optimisticResponse: {
+          __typename: "Mutation",
+          addPet: {
+            __typename: "Pet",
+            id: nanoid(),
+            ...input,
+            img: "https://via.placeholder.com/300",
+          },
+        },
+      });
+    }
   };
 
   const Modal = (
@@ -71,7 +85,7 @@ export default function Pets() {
 
   return (
     <Fragment>
-      {(loading || addPetLoading) && <Loader />}
+      {loading && <Loader />}
       {modal ? Modal : List}
     </Fragment>
   );

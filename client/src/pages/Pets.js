@@ -6,32 +6,39 @@ import PetsList from "../components/PetsList";
 import NewPetModal from "../components/NewPetModal";
 import Loader from "../components/Loader";
 
-const PET_FIELDS = `
-  id
-  name
-  type
-  img
+const PET_FIELDS = gql`
+  fragment PetFields on Pet {
+    id
+    name
+    type
+    img
+    vaccinated @client
+  }
 `;
 
 const ALL_PETS = gql`
   query AllPets {
     pets {
-      ${PET_FIELDS}
+      ...PetFields
     }
   }
+  ${PET_FIELDS}
 `;
 
 const ADD_PET = gql`
   mutation AddPetMutation($input: NewPetInput!) {
     addPet(input: $input) {
-      ${PET_FIELDS}
+      ...PetFields
     }
   }
+  ${PET_FIELDS}
 `;
 
 export default function Pets() {
   const [modal, setModal] = useState(false);
+
   const { data: { pets } = {}, loading } = useQuery(ALL_PETS);
+
   const [addPet] = useMutation(ADD_PET, {
     update(cache, { data: { addPet } }) {
       const { pets } = cache.readQuery({ query: ALL_PETS });
@@ -54,6 +61,7 @@ export default function Pets() {
             id: nanoid(),
             ...input,
             img: "https://via.placeholder.com/300",
+            vaccinated: true,
           },
         },
       });
